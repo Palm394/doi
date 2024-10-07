@@ -9,14 +9,23 @@ const internal_http_client = axios.create({
 });
 
 internal_http_client.interceptors.response.use(
-	(response) => {
-		if (response.status === 401) {
-			throw Error("Unauthorized");
+	(res) => {
+		if (res.data["success"] === false) {
+			throw Promise.reject(res);
 		}
-		return response;
+		return res;
 	},
 	(error) => {
-		return Promise.reject(error);
+		if (error.status === 401) {
+			return Promise.reject("Unauthorized");
+		}
+		if (error.response.data.message) {
+			return Promise.reject(error.response.data.message);
+		}
+		if (error.message) {
+			return Promise.reject(error.message);
+		}
+		return Promise.reject("An error occurred");
 	}
 );
 

@@ -1,28 +1,18 @@
+import { Link, useLocation } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import LogoutButton from "./LogoutButton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import LogoutButton from "@/components/LogoutButton";
+import { PageRoute } from "@/config/page";
 
 export default function Sidebar() {
     return (
         <div className="w-64 p-6 bg-white flex flex-col justify-between">
             <div>
                 <h1 className="text-2xl font-bold mb-6">FIRE</h1>
-                <Button className="w-full justify-start mb-2">
-                    Dashboard
-                </Button>
-                <Button
-                    className="w-full justify-start mb-2"
-                    variant={"ghost"}
-                >
-                    Accounts
-                </Button>
-                <Button
-                    className="w-full justify-start mb-2"
-                    variant={"ghost"}
-                >
-                    Transactions
-                </Button>
+                <SidebarLink />
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -38,5 +28,25 @@ export default function Sidebar() {
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
+    );
+}
+
+function SidebarLink() {
+    return (
+        <div>
+            <SidebarLinkButton to={PageRoute.DASHBOARD}>Dashboard</SidebarLinkButton>
+            <SidebarLinkButton to={PageRoute.ACCOUNT}>Account</SidebarLinkButton>
+        </div>
+    );
+}
+
+function SidebarLinkButton({ to, children }: { to: string; children: React.ReactNode }) {
+    const { pathname } = useLocation();
+    return (
+        <Link to={to}>
+            <Button variant={pathname === to ? "default" : "ghost"} className="w-full justify-start mb-2">
+                {children}
+            </Button>
+        </Link>
     );
 }

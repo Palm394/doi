@@ -26,10 +26,12 @@ func main() {
 	})
 
 	api := app.Group("/api")
-	// don't require authorization
+
 	api.Route("/auth", router.Auth)
 	// auth middleware
 	api.Use("/", middleware.AuthRequired)
+
+	api.Route("/account", router.Account)
 
 	app.Listen("127.0.0.1:8080")
 }

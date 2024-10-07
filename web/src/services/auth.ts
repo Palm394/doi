@@ -15,16 +15,13 @@ async function login(form: LoginRequest): Promise<LoginResponse> {
 		return { success: false, message: "Email and password are required" };
 	}
 	try {
-		const response = await internal_http_client.post("/api/auth/login", form);
-		if (response.data["success"] === false) {
-			throw Error(response.data["message"]);
-		}
+		await internal_http_client.post("/api/auth/login", form);
 		return { success: true, message: "Login success" };
 	} catch (error) {
-		if (error instanceof Error) {
-			return { success: false, message: error.message };
+		if (error === "Unauthorized") {
+			return { success: false, message: "Invalid email or password" };
 		}
-		return { success: false, message: "An error occurred" };
+		return { success: false, message: String(error) };
 	}
 }
 

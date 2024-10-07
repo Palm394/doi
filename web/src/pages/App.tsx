@@ -1,14 +1,7 @@
-import Sidebar from "@/components/Sidebar"
-
-function App() {
+export default function App() {
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <>
-        App Component
-      </>
-    </div>
+    <>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+    </>
   )
 }
-
-export default App
