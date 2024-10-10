@@ -26,6 +26,13 @@ export default function NewTransactionDialog(props: props) {
     const [accountName, setAccountName] = useState<string | null>(null)
     const [avaliableAccounts, setAvaliableAccounts] = useState<any>([])
     const [date, setDate] = useState<Date>()
+    const [asset, setAsset] = useState<string>()
+    const [type, setType] = useState<string>()
+    const [shares, setShares] = useState<number>()
+    const [pricePerShare, setPricePerShare] = useState<number>()
+    const [fee, setFee] = useState<number>()
+    const [notes, setNotes] = useState<string>()
+
     const { toast } = useToast()
 
     async function submit(event: React.SyntheticEvent) {
@@ -64,24 +71,26 @@ export default function NewTransactionDialog(props: props) {
                     <DialogDescription>Fill in the form to create a new transaction</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="flex flex-col gap-4 px-4">
-                    <div>
-                        <Label>Account</Label>
-                        <Select onValueChange={value => setAccountName(value)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={accountName ?? "Select account"} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {avaliableAccounts?.map((account: any) => (
-                                    <SelectItem key={account.id} value={account.name}>{account.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="flex gap-4">
+                        <div className="flex-1">
+                            <Label>Account</Label>
+                            <Select onValueChange={value => setAccountName(value)} required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder={accountName ?? "Select account"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {avaliableAccounts?.map((account: any) => (
+                                        <SelectItem key={account.id} value={account.name}>{account.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label>Date</Label>
+                            <Input type="datetime-local" required className="w-fit" />
+                        </div>
                     </div>
-                    <div>
-                        <Label>Date</Label>
-                        <Input type="datetime-local" required className="w-fit" />
-                    </div>
-                    <div className="flex gap-6">
+                    <div className="flex gap-4">
                         <div className="flex-1">
                             <Label>Asset</Label>
                             <Input required />
@@ -93,8 +102,8 @@ export default function NewTransactionDialog(props: props) {
                                     <SelectValue placeholder="Select type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="buy" disabled>Buy</SelectItem>
-                                    <SelectItem value="sell" disabled>Sell</SelectItem>
+                                    <SelectItem value="buy">Buy</SelectItem>
+                                    <SelectItem value="sell">Sell</SelectItem>
                                     <SelectItem value="dividend" disabled>Dividend</SelectItem>
                                     <SelectItem value="transfer" disabled>Transfer</SelectItem>
                                     <SelectItem value="deposit" disabled>Deposit</SelectItem>
@@ -102,11 +111,12 @@ export default function NewTransactionDialog(props: props) {
                                     <SelectItem value="interest" disabled>Interest</SelectItem>
                                     <SelectItem value="fee" disabled>Fee</SelectItem>
                                     <SelectItem value="split" disabled>Split</SelectItem>
+                                    <SelectItem value="rebalance" disabled>Rebalance</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
-                    <div className="flex gap-6">
+                    <div className="flex gap-4">
                         <div>
                             <Label>Shares</Label>
                             <Input required />
