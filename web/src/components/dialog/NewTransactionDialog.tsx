@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 
 import { useToast } from "@/hooks/use-toast"
 import { getAccount } from "@/services/account"
@@ -24,6 +25,7 @@ export default function NewTransactionDialog(props: props) {
     const [open, setOpen] = useState<boolean>(false)
     const [accountName, setAccountName] = useState<string | null>(null)
     const [avaliableAccounts, setAvaliableAccounts] = useState<any>([])
+    const [date, setDate] = useState<Date>()
     const { toast } = useToast()
 
     async function submit(event: React.SyntheticEvent) {
@@ -76,12 +78,33 @@ export default function NewTransactionDialog(props: props) {
                         </Select>
                     </div>
                     <div>
-                        <Label>Asset</Label>
-                        <Input required />
+                        <Label>Date</Label>
+                        <Input type="datetime-local" required className="w-fit" />
                     </div>
-                    <div>
-                        <Label>Type</Label>
-                        <Input required />
+                    <div className="flex gap-6">
+                        <div className="flex-1">
+                            <Label>Asset</Label>
+                            <Input required />
+                        </div>
+                        <div className="flex-1">
+                            <Label>Type</Label>
+                            <Select required>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="buy" disabled>Buy</SelectItem>
+                                    <SelectItem value="sell" disabled>Sell</SelectItem>
+                                    <SelectItem value="dividend" disabled>Dividend</SelectItem>
+                                    <SelectItem value="transfer" disabled>Transfer</SelectItem>
+                                    <SelectItem value="deposit" disabled>Deposit</SelectItem>
+                                    <SelectItem value="withdraw" disabled>Withdraw</SelectItem>
+                                    <SelectItem value="interest" disabled>Interest</SelectItem>
+                                    <SelectItem value="fee" disabled>Fee</SelectItem>
+                                    <SelectItem value="split" disabled>Split</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <div className="flex gap-6">
                         <div>
@@ -96,6 +119,10 @@ export default function NewTransactionDialog(props: props) {
                             <Label>Fee</Label>
                             <Input required />
                         </div>
+                    </div>
+                    <div>
+                        <Label>Notes</Label>
+                        <Textarea />
                     </div>
                     <div className="flex flex-row-reverse gap-2">
                         <Button className="w-fit mt-6">Create</Button>
