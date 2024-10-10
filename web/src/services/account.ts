@@ -11,7 +11,10 @@ async function getAccount(): Promise<getAccountResponse> {
 		const response = await internal_http_client.get("/api/account");
 		return { success: true, data: response.data.data };
 	} catch (error) {
-		return { success: false, message: "An error occurred" };
+		return {
+			success: false,
+			message: error ? String(error) : "An error occurred",
+		};
 	}
 }
 

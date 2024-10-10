@@ -16,18 +16,31 @@ import { Textarea } from "@/components/ui/textarea"
 
 import { useToast } from "@/hooks/use-toast"
 import { getAccount } from "@/services/account"
+import { TransactionType } from "@/types/transaction"
 
 type props = {
     parentRefresh: () => void
 }
 
+type FormInputs = {
+    accountName: string
+    date: Date
+    asset: string
+    transactionType: TransactionType
+    shares: number
+    pricePerShare: number
+    fee: number
+    notes: string
+}
+
 export default function NewTransactionDialog(props: props) {
     const [open, setOpen] = useState<boolean>(false)
-    const [accountName, setAccountName] = useState<string | null>(null)
     const [avaliableAccounts, setAvaliableAccounts] = useState<any>([])
+
+    const [accountName, setAccountName] = useState<string | null>(null)
     const [date, setDate] = useState<Date>()
     const [asset, setAsset] = useState<string>()
-    const [type, setType] = useState<string>()
+    const [transactionType, setTransactionType] = useState<string>()
     const [shares, setShares] = useState<number>()
     const [pricePerShare, setPricePerShare] = useState<number>()
     const [fee, setFee] = useState<number>()
@@ -35,7 +48,7 @@ export default function NewTransactionDialog(props: props) {
 
     const { toast } = useToast()
 
-    async function submit(event: React.SyntheticEvent) {
+    function onSubmit(event: React.SyntheticEvent) {
         event.preventDefault()
         toast({
             title: '',
@@ -70,7 +83,7 @@ export default function NewTransactionDialog(props: props) {
                     <DialogTitle>New Transaction</DialogTitle>
                     <DialogDescription>Fill in the form to create a new transaction</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={submit} className="flex flex-col gap-4 px-4">
+                <form onSubmit={onSubmit} className="flex flex-col gap-4 px-4">
                     <div className="flex gap-4">
                         <div className="flex-1">
                             <Label>Account</Label>
@@ -90,31 +103,29 @@ export default function NewTransactionDialog(props: props) {
                             <Input type="datetime-local" required className="w-fit" />
                         </div>
                     </div>
-                    <div className="flex gap-4">
-                        <div className="flex-1">
-                            <Label>Asset</Label>
-                            <Input required />
-                        </div>
-                        <div className="flex-1">
-                            <Label>Type</Label>
-                            <Select required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="buy">Buy</SelectItem>
-                                    <SelectItem value="sell">Sell</SelectItem>
-                                    <SelectItem value="dividend" disabled>Dividend</SelectItem>
-                                    <SelectItem value="transfer" disabled>Transfer</SelectItem>
-                                    <SelectItem value="deposit" disabled>Deposit</SelectItem>
-                                    <SelectItem value="withdraw" disabled>Withdraw</SelectItem>
-                                    <SelectItem value="interest" disabled>Interest</SelectItem>
-                                    <SelectItem value="fee" disabled>Fee</SelectItem>
-                                    <SelectItem value="split" disabled>Split</SelectItem>
-                                    <SelectItem value="rebalance" disabled>Rebalance</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div className="flex-1">
+                        <Label>Type</Label>
+                        <Select required>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.values(TransactionType).map((type) => (
+                                    <SelectItem key={type} value={type}
+                                        disabled={
+                                            type !== TransactionType.DEPOSIT &&
+                                            type !== TransactionType.WITHDRAW
+                                        }
+                                    >
+                                        {type.charAt(0).toLocaleUpperCase() + type.slice(1)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex-1">
+                        <Label>Asset</Label>
+                        <Input required />
                     </div>
                     <div className="flex gap-4">
                         <div>
@@ -129,6 +140,10 @@ export default function NewTransactionDialog(props: props) {
                             <Label>Fee</Label>
                             <Input required />
                         </div>
+                    </div>
+                    <div>
+                        <Label>Amount</Label>
+                        <Input type="number" required />
                     </div>
                     <div>
                         <Label>Notes</Label>
