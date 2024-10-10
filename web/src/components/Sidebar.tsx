@@ -36,6 +36,7 @@ function SidebarLink() {
         <div>
             <SidebarLinkButton to={PageRoute.DASHBOARD}>Dashboard</SidebarLinkButton>
             <SidebarLinkButton to={PageRoute.ACCOUNT}>Account</SidebarLinkButton>
+            <SidebarLinkButton to={PageRoute.TRANSACTIONS}>Transactions</SidebarLinkButton>
         </div>
     );
 }
