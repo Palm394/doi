@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { SubmitHandler, useForm, Controller } from "react-hook-form"
 
 import {
     Dialog,
@@ -30,30 +31,25 @@ type FormInputs = {
     shares: number
     pricePerShare: number
     fee: number
+    amount: number
     notes: string
 }
 
 export default function NewTransactionDialog(props: props) {
     const [open, setOpen] = useState<boolean>(false)
-    const [avaliableAccounts, setAvaliableAccounts] = useState<any>([])
+    const [avaliableAccounts, setAvaliableAccounts] = useState<{ name: string, id: string }[]>([])
 
-    const [accountName, setAccountName] = useState<string | null>(null)
-    const [date, setDate] = useState<Date>()
-    const [asset, setAsset] = useState<string>()
-    const [transactionType, setTransactionType] = useState<string>()
-    const [shares, setShares] = useState<number>()
-    const [pricePerShare, setPricePerShare] = useState<number>()
-    const [fee, setFee] = useState<number>()
-    const [notes, setNotes] = useState<string>()
+    const { register, formState: { errors }, handleSubmit, reset, control, watch } = useForm<FormInputs>()
 
     const { toast } = useToast()
 
-    function onSubmit(event: React.SyntheticEvent) {
-        event.preventDefault()
-        toast({
-            title: '',
-            description: '',
-        })
+    const onSubmit: SubmitHandler<FormInputs> = (data, event) => {
+        event?.preventDefault()
+        console.log(data)
+        // toast({x`
+        //     title: '',
+        //     description: '',
+        // })
         props.parentRefresh()
     }
 
@@ -74,7 +70,7 @@ export default function NewTransactionDialog(props: props) {
     }
 
     return (
-        <Dialog open={open} onOpenChange={(open) => { setAccountName(null); setOpen(open); }}>
+        <Dialog open={open} onOpenChange={(open) => { setOpen(open); reset() }} modal>
             <DialogTrigger asChild>
                 <Button>New</Button>
             </DialogTrigger>
@@ -83,71 +79,96 @@ export default function NewTransactionDialog(props: props) {
                     <DialogTitle>New Transaction</DialogTitle>
                     <DialogDescription>Fill in the form to create a new transaction</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="flex flex-col gap-4 px-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 px-4">
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <Label>Account</Label>
-                            <Select onValueChange={value => setAccountName(value)} required>
-                                <SelectTrigger>
-                                    <SelectValue placeholder={accountName ?? "Select account"} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {avaliableAccounts?.map((account: any) => (
-                                        <SelectItem key={account.id} value={account.name}>{account.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="accountName">Account<Label className="text-red-500">&nbsp;{errors.accountName?.message}</Label></Label>
+                            <Controller
+                                name="accountName"
+                                rules={{ required: "This field is required" }}
+                                control={control}
+                                render={({ field }) =>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={watch("accountName") ?? "Select account"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {avaliableAccounts?.map((account) => (
+                                                <SelectItem key={account.id} value={account.name}>{account.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                }
+                            />
                         </div>
                         <div>
-                            <Label>Date</Label>
-                            <Input type="datetime-local" required className="w-fit" />
+                            <Label>Date<Label className="text-red-500">&nbsp;{errors.date?.message}</Label></Label>
+                            <Input type="datetime-local" {...register("date", { required: "This field is required", valueAsDate: true })} className="w-fit" />
                         </div>
                     </div>
                     <div className="flex-1">
-                        <Label>Type</Label>
-                        <Select required>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.values(TransactionType).map((type) => (
-                                    <SelectItem key={type} value={type}
-                                        disabled={
-                                            type !== TransactionType.DEPOSIT &&
-                                            type !== TransactionType.WITHDRAW
-                                        }
-                                    >
-                                        {type.charAt(0).toLocaleUpperCase() + type.slice(1)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Label>Type<Label className="text-red-500">&nbsp;{errors.transactionType?.message}</Label></Label>
+                        <Controller
+                            name="transactionType"
+                            rules={{ required: "This field is required" }}
+                            control={control}
+                            render={({ field }) =>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Object.values(TransactionType).map((type) => (
+                                            <SelectItem key={type} value={type}
+                                                disabled={
+                                                    type !== TransactionType.DEPOSIT &&
+                                                    type !== TransactionType.WITHDRAW &&
+                                                    type !== TransactionType.BUY &&
+                                                    type !== TransactionType.SELL
+                                                }
+                                            >
+                                                {type.charAt(0).toLocaleUpperCase() + type.slice(1)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            }
+                        />
                     </div>
                     <div className="flex-1">
-                        <Label>Asset</Label>
-                        <Input required />
+                        <Label>Asset <Label className="text-red-500">{errors.asset?.message}</Label></Label>
+                        <Input {...register("asset", { required: "This field is required" })} />
                     </div>
-                    <div className="flex gap-4">
+                    {(watch("transactionType") === TransactionType.BUY || watch("transactionType") === TransactionType.SELL) &&
+                        <>
+                            <div className="flex gap-4">
+                                <div>
+                                    <Label>Shares</Label>
+                                    <Input {...register("shares", { required: "This field is required" })} />
+                                    <Label className="text-red-500 text-xs">{errors.shares?.message}</Label>
+                                </div>
+                                <div>
+                                    <Label>Price / Share</Label>
+                                    <Input {...register("pricePerShare", { required: "This field is required" })} />
+                                    <Label className="text-red-500 text-xs">{errors.pricePerShare?.message}</Label>
+                                </div>
+                                <div>
+                                    <Label>Fee</Label>
+                                    <Input {...register("fee", { required: "This field is required" })} />
+                                    <Label className="text-red-500 text-xs">{errors.fee?.message}</Label>
+                                </div>
+                            </div>
+                        </>
+                    }
+                    {(watch("transactionType") === TransactionType.DEPOSIT || watch("transactionType") === TransactionType.WITHDRAW) &&
                         <div>
-                            <Label>Shares</Label>
-                            <Input required />
+                            <Label>Amount <Label className="text-red-500">&nbsp;{errors.amount?.message}</Label></Label>
+                            <Input type="number" {...register("amount", { required: "This field is required", })} />
                         </div>
-                        <div>
-                            <Label>Price/Share</Label>
-                            <Input required />
-                        </div>
-                        <div>
-                            <Label>Fee</Label>
-                            <Input required />
-                        </div>
-                    </div>
-                    <div>
-                        <Label>Amount</Label>
-                        <Input type="number" required />
-                    </div>
+                    }
                     <div>
                         <Label>Notes</Label>
-                        <Textarea />
+                        <Textarea {...register("notes")} />
                     </div>
                     <div className="flex flex-row-reverse gap-2">
                         <Button className="w-fit mt-6">Create</Button>
