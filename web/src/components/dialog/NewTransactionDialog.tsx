@@ -25,7 +25,7 @@ type props = {
 }
 
 type FormInputs = {
-    accountName: string
+    accountID: string
     date: Date
     asset: string
     transactionType: TransactionType
@@ -57,7 +57,6 @@ export default function NewTransactionDialog(props: props) {
 
     async function refresh() {
         const [accounts, assets] = await Promise.all([getAccount(), getAssets()])
-        console.log(accounts, assets)
         if (accounts.success === false || !accounts.data) {
             return toast({
                 title: 'Get Account Failed',
@@ -66,6 +65,13 @@ export default function NewTransactionDialog(props: props) {
             })
         }
         setAvaliableAccounts(accounts.data)
+        if (assets.success === false || !assets.data) {
+            return toast({
+                title: 'Get Assets Failed',
+                description: assets.message,
+                variant: 'destructive',
+            })
+        }
         setAvaliableAssets(assets.data)
     }
 
@@ -82,19 +88,19 @@ export default function NewTransactionDialog(props: props) {
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 px-4">
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <Label htmlFor="accountName">Account<Label className="text-red-500">&nbsp;{errors.accountName?.message}</Label></Label>
+                            <Label htmlFor="accountID">Account<Label className="text-red-500">&nbsp;{errors.accountID?.message}</Label></Label>
                             <Controller
-                                name="accountName"
+                                name="accountID"
                                 rules={{ required: "This field is required" }}
                                 control={control}
                                 render={({ field }) =>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder={watch("accountName") ?? "Select account"} />
+                                            <SelectValue placeholder={"Select account"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {avaliableAccounts?.map((account) => (
-                                                <SelectItem key={account.id} value={account.name}>{account.name}</SelectItem>
+                                            {avaliableAccounts.map((account) => (
+                                                <SelectItem key={account.id} value={account.id.toString()}>{account.name}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -121,10 +127,7 @@ export default function NewTransactionDialog(props: props) {
                                         {Object.values(TransactionType).map((type) => (
                                             <SelectItem key={type} value={type}
                                                 disabled={
-                                                    type !== TransactionType.DEPOSIT &&
-                                                    type !== TransactionType.WITHDRAW &&
-                                                    type !== TransactionType.BUY &&
-                                                    type !== TransactionType.SELL
+                                                    type !== TransactionType.DEPOSIT
                                                 }
                                             >
                                                 {type.charAt(0).toLocaleUpperCase() + type.slice(1)}
@@ -136,7 +139,7 @@ export default function NewTransactionDialog(props: props) {
                         />
                     </div>
                     <div className="flex-1">
-                        <Label>Asset <Label className="text-red-500">{errors.asset?.message}</Label></Label>
+                        <Label>Asset<Label className="text-red-500">&nbsp;{errors.asset?.message}</Label></Label>
                         <Controller
                             name="asset"
                             rules={{ required: "This field is required" }}
