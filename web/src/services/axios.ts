@@ -13,7 +13,7 @@ internal_http_client.interceptors.response.use(
 		if (res.data["success"] === false) {
 			throw Promise.reject(res);
 		}
-		return res;
+		return res.data;
 	},
 	(error) => {
 		if (error.status === 401) {

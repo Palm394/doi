@@ -9,7 +9,7 @@ type getAccountResponse = {
 async function getAccount(): Promise<getAccountResponse> {
 	try {
 		const response = await internal_http_client.get("/api/account");
-		return { success: true, data: response.data.data };
+		return { success: true, data: response.data };
 	} catch (error) {
 		return {
 			success: false,
