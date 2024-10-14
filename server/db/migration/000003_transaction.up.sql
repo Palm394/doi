@@ -1,5 +1,5 @@
 CREATE TABLE assets (
-    id uuid PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL UNIQUE,
     type VARCHAR(255),
     current_value DECIMAL(10, 6),
