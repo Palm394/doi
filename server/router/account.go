@@ -20,12 +20,7 @@ func Account(router fiber.Router) {
 
 func getAccounts(c *fiber.Ctx) error {
 	accounts, err := db.Queries.GetAccounts(context.Background())
-	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(&fiber.Map{
-			"success": false,
-		})
-	}
-	if len(accounts) == 0 {
+	if err != nil || len(accounts) == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(&fiber.Map{
 			"success": false,
 		})
@@ -49,7 +44,7 @@ func getAccountById(c *fiber.Ctx) error {
 			"success": false,
 		})
 	}
-	// [?] better nil case
+	// [?] better zero-value case
 	if account.ID == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(&fiber.Map{
 			"success": false,

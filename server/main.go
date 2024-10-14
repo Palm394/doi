@@ -32,6 +32,7 @@ func main() {
 	api.Use("/", middleware.AuthRequired)
 
 	api.Route("/account", router.Account)
+	api.Route("/asset", router.Asset)
 
 	app.Listen("127.0.0.1:8080")
 }
