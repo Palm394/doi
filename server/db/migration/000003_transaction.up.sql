@@ -12,7 +12,7 @@ CREATE TABLE transactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     asset_id UUID NOT NULL REFERENCES assets(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
+    date TIMESTAMP NOT NULL,
     type VARCHAR(255) NOT NULL,
     quantity DECIMAL(16, 8) NOT NULL,
     price_per_unit DECIMAL(10, 2) NOT NULL,
