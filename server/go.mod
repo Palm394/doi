@@ -4,6 +4,8 @@ go 1.22.2
 
 require github.com/gofiber/fiber/v2 v2.52.5
 
+require github.com/shopspring/decimal v1.4.0
+
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1

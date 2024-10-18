@@ -33,6 +33,7 @@ func main() {
 
 	api.Route("/account", router.Account)
 	api.Route("/asset", router.Asset)
+	api.Route("/transaction", router.Transaction)
 
 	app.Listen("127.0.0.1:8080")
 }

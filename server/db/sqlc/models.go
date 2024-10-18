@@ -40,13 +40,13 @@ type Transaction struct {
 	ID           uuid.UUID `json:"id"`
 	AccountID    int32     `json:"account_id"`
 	AssetID      uuid.UUID `json:"asset_id"`
+	Date         time.Time `json:"date"`
 	Type         string    `json:"type"`
 	Quantity     string    `json:"quantity"`
 	PricePerUnit string    `json:"price_per_unit"`
-	TotalValue   string    `json:"total_value"`
+	Cost         string    `json:"cost"`
 	Fees         string    `json:"fees"`
 	Notes        string    `json:"notes"`
-	Date         time.Time `json:"date"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
