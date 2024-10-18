@@ -1,48 +1,72 @@
+import { useEffect, useState } from "react";
+import { MoreHorizontal } from "lucide-react";
+
 import NewTransactionDialog from "@/components/dialog/NewTransactionDialog";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+
+import { getTransactions } from "@/services/transaction";
+import { Transaction as TransactionType } from "@/types/transaction";
+import { Label } from "@/components/ui/label";
 
 export default function Transaction() {
+    const [transactions, setTransactions] = useState<TransactionType[]>([]);
+
+    useEffect(() => {
+        refresh();
+    }, []);
+
+    async function refresh() {
+        const response = await getTransactions();
+        if (response.success) {
+            setTransactions(response.data || []);
+        } else {
+            console.error(response.message);
+        }
+    }
+
     return (
         <>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Transactions</h1>
-                <NewTransactionDialog parentRefresh={() => { }} />
+                <NewTransactionDialog parentRefresh={refresh} />
             </div>
             <Table className="bg-white rounded-xl">
                 <TableHeader>
                     <TableRow className="bg-black hover:bg-current">
-                        <TableHead className="text-white">ID</TableHead>
                         <TableHead className="text-white">Date</TableHead>
                         <TableHead className="text-white">Account</TableHead>
                         <TableHead className="text-white">Asset</TableHead>
                         <TableHead className="text-white">Type</TableHead>
-                        <TableHead className="text-white">Shares</TableHead>
-                        <TableHead className="text-white">Price/Share</TableHead>
-                        <TableHead className="text-white">Value</TableHead>
-                        <TableHead className="text-white">Fee</TableHead>
+                        <TableHead className="text-white text-end">Shares</TableHead>
+                        <TableHead className="text-white text-end">Price/Share</TableHead>
+                        <TableHead className="text-white text-end">Fee</TableHead>
                         <TableHead />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow>
-                        <TableCell>1</TableCell>
-                        <TableCell>2021-09-01</TableCell>
-                        <TableCell>Dime! USD</TableCell>
-                        <TableCell>VOO</TableCell>
-                        <TableCell>Buy</TableCell>
-                        <TableCell>10</TableCell>
-                        <TableCell>100</TableCell>
-                        <TableCell>1000</TableCell>
-                        <TableCell>0</TableCell>
-                        <TableCell className="float-end">
-                            <Button variant="ghost" className="h-8 w-8 p-2">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </TableCell>
-                    </TableRow>
+                    {transactions.map((transaction) => {
+                        return (
+                            <TableRow key={transaction.id}>
+                                <TableCell>
+                                    <Label className="block">{new Date(transaction.date).toLocaleDateString()}</Label>
+                                    <Label className="text-xs text-neutral-500">{new Date(transaction.date).toLocaleTimeString()}</Label>
+                                </TableCell>
+                                <TableCell>{transaction.account_id}</TableCell>
+                                <TableCell>{transaction.asset_id}</TableCell>
+                                <TableCell>{transaction.type.toLocaleUpperCase()}</TableCell>
+                                <TableCell className="text-end">{Number(transaction.quantity).toFixed(2)}</TableCell>
+                                <TableCell className="text-end">{transaction.price_per_unit}</TableCell>
+                                <TableCell className="text-end">{transaction.fees}</TableCell>
+                                <TableCell className="float-end">
+                                    <Button variant="ghost" className="h-8 w-8 p-2">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        )
+                    })}
                 </TableBody>
             </Table>
         </>

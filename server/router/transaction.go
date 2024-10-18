@@ -30,7 +30,20 @@ type transactionRequestParams struct {
 }
 
 func getTransactions(c *fiber.Ctx) error {
-	return c.SendStatus(503)
+	transactions, err := db.Queries.GetTransactions(context.Background())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.SendStatus(fiber.StatusNotFound)
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    transactions,
+	})
 }
 
 func createTransaction(c *fiber.Ctx) error {
