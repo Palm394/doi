@@ -38,7 +38,12 @@ func createTransaction(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return err
 	}
-	// Validate body
+	if body.AccountID == 0 || body.AssetID == uuid.Nil || body.Date == (time.Time{}) || body.Type == "" || body.Quantity <= 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": "Some property in body is not valid",
+		})
+	}
 	input_quantity := decimal.NewFromFloat(body.Quantity)
 	_ = decimal.NewFromFloat(body.PricePerUnit)
 	fees := decimal.NewFromFloat(body.Fees)
@@ -119,7 +124,7 @@ func createTransaction(c *fiber.Ctx) error {
 				Notes:        body.Notes,
 			})
 			if err != nil {
-				fmt.Println("failed to create transaction")
+				fmt.Println("Deposit: Failed to create transaction")
 				return err
 			}
 			_, err = db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
@@ -129,7 +134,7 @@ func createTransaction(c *fiber.Ctx) error {
 				AverageCost: sum_quantity.String(),
 			})
 			if err != nil {
-				fmt.Println("failed to update account asset")
+				fmt.Println("Deposit: Failed to update account asset")
 				return err
 			}
 			return nil
