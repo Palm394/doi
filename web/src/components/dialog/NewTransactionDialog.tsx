@@ -19,36 +19,37 @@ import { useToast } from "@/hooks/use-toast"
 import { getAccount } from "@/services/account"
 import { getAssets } from "@/services/asset"
 import { TransactionType } from "@/types/transaction"
+import { createTransaction, createTransactionParams } from "@/services/transaction"
 
 type props = {
     parentRefresh: () => void
 }
 
-type FormInputs = {
-    accountID: string
-    date: Date
-    asset: string
-    transactionType: TransactionType
-    shares: number
-    pricePerShare: number
-    fee: number
-    amount: number
-    notes: string
-}
-
 export default function NewTransactionDialog(props: props) {
     const [open, setOpen] = useState<boolean>(false)
-    const [avaliableAccounts, setAvaliableAccounts] = useState<{ name: string, id: string }[]>([])
+    const [avaliableAccounts, setAvaliableAccounts] = useState<{ name: string, id: number }[]>([])
     const [avaliableAssets, setAvaliableAssets] = useState<{ name: string, id: string }[]>([])
 
-    const { register, formState: { errors }, handleSubmit, reset, control, watch } = useForm<FormInputs>()
+    const { register, formState: { errors }, handleSubmit, reset, control, watch } = useForm<createTransactionParams>()
 
     const { toast } = useToast()
 
-    const onSubmit: SubmitHandler<FormInputs> = (data, event) => {
+    const onSubmit: SubmitHandler<createTransactionParams> = async (data, event) => {
         event?.preventDefault()
-        console.log(data)
+        const response = await createTransaction(data)
+        if (response.success === false) {
+            return toast({
+                title: 'Create Transaction Failed',
+                description: response.message,
+                variant: 'destructive',
+            })
+        }
+        setOpen(false)
         props.parentRefresh()
+        return toast({
+            title: 'Transaction Created',
+            description: 'Transaction has been created successfully',
+        })
     }
 
     useEffect(() => {
@@ -94,7 +95,7 @@ export default function NewTransactionDialog(props: props) {
                                 rules={{ required: "This field is required" }}
                                 control={control}
                                 render={({ field }) =>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={(value) => field.onChange(parseInt(value))}>
                                         <SelectTrigger>
                                             <SelectValue placeholder={"Select account"} />
                                         </SelectTrigger>
@@ -139,9 +140,9 @@ export default function NewTransactionDialog(props: props) {
                         />
                     </div>
                     <div className="flex-1">
-                        <Label>Asset<Label className="text-red-500">&nbsp;{errors.asset?.message}</Label></Label>
+                        <Label>Asset<Label className="text-red-500">&nbsp;{errors.assetID?.message}</Label></Label>
                         <Controller
-                            name="asset"
+                            name="assetID"
                             rules={{ required: "This field is required" }}
                             control={control}
                             render={({ field }) =>
@@ -163,26 +164,26 @@ export default function NewTransactionDialog(props: props) {
                             <div className="flex gap-4">
                                 <div>
                                     <Label>Shares</Label>
-                                    <Input {...register("shares", { required: "This field is required" })} />
-                                    <Label className="text-red-500 text-xs">{errors.shares?.message}</Label>
+                                    <Input type="number" {...register("quantity", { required: "This field is required" })} />
+                                    <Label className="text-red-500 text-xs">{errors.quantity?.message}</Label>
                                 </div>
                                 <div>
                                     <Label>Price / Share</Label>
-                                    <Input {...register("pricePerShare", { required: "This field is required" })} />
-                                    <Label className="text-red-500 text-xs">{errors.pricePerShare?.message}</Label>
+                                    <Input {...register("price_per_unit", { required: "This field is required" })} />
+                                    <Label className="text-red-500 text-xs">{errors.price_per_unit?.message}</Label>
                                 </div>
                                 <div>
                                     <Label>Fee</Label>
-                                    <Input {...register("fee", { required: "This field is required" })} />
-                                    <Label className="text-red-500 text-xs">{errors.fee?.message}</Label>
+                                    <Input {...register("fees", { required: "This field is required" })} />
+                                    <Label className="text-red-500 text-xs">{errors.fees?.message}</Label>
                                 </div>
                             </div>
                         </>
                     }
                     {(watch("transactionType") === TransactionType.DEPOSIT || watch("transactionType") === TransactionType.WITHDRAW) &&
                         <div>
-                            <Label>Amount <Label className="text-red-500">&nbsp;{errors.amount?.message}</Label></Label>
-                            <Input type="number" {...register("amount", { required: "This field is required", })} />
+                            <Label>Amount <Label className="text-red-500">&nbsp;{errors.quantity?.message}</Label></Label>
+                            <Input type="number" {...register("quantity", { required: "This field is required", valueAsNumber: true })} />
                         </div>
                     }
                     <div>

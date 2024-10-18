@@ -22,7 +22,7 @@ type transactionRequestParams struct {
 	AccountID    int32     `json:"accountID"`
 	AssetID      uuid.UUID `json:"assetID"`
 	Date         time.Time `json:"date"`
-	Type         string    `json:"type"`
+	Type         string    `json:"transactionType"`
 	Quantity     float64   `json:"quantity"`
 	PricePerUnit float64   `json:"price_per_unit"`
 	Fees         float64   `json:"fees"`
@@ -36,7 +36,10 @@ func getTransactions(c *fiber.Ctx) error {
 func createTransaction(c *fiber.Ctx) error {
 	var body transactionRequestParams
 	if err := c.BodyParser(&body); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
 	}
 	if body.AccountID == 0 || body.AssetID == uuid.Nil || body.Date == (time.Time{}) || body.Type == "" || body.Quantity <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
