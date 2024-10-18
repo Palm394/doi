@@ -59,22 +59,49 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 }
 
 const getTransactions = `-- name: GetTransactions :many
-SELECT id, account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes, created_at, updated_at FROM transactions ORDER BY date DESC
+SELECT 
+accounts.Name AS account,
+assets.Name AS asset,
+transactions.ID AS id, 
+transactions.Date AS date,
+transactions.Type AS type,
+transactions.Quantity AS quantity,
+transactions.Price_Per_Unit AS price_per_unit,
+transactions.Cost AS cost,
+transactions.Fees AS fees,
+transactions.Notes AS notes
+FROM transactions
+INNER JOIN assets ON transactions.asset_id = assets.id
+INNER JOIN accounts ON transactions.account_id = accounts.id
+ORDER BY date DESC
 `
 
-func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
+type GetTransactionsRow struct {
+	Account      string    `json:"account"`
+	Asset        string    `json:"asset"`
+	ID           uuid.UUID `json:"id"`
+	Date         time.Time `json:"date"`
+	Type         string    `json:"type"`
+	Quantity     string    `json:"quantity"`
+	PricePerUnit string    `json:"price_per_unit"`
+	Cost         string    `json:"cost"`
+	Fees         string    `json:"fees"`
+	Notes        string    `json:"notes"`
+}
+
+func (q *Queries) GetTransactions(ctx context.Context) ([]GetTransactionsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getTransactions)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transaction
+	var items []GetTransactionsRow
 	for rows.Next() {
-		var i Transaction
+		var i GetTransactionsRow
 		if err := rows.Scan(
+			&i.Account,
+			&i.Asset,
 			&i.ID,
-			&i.AccountID,
-			&i.AssetID,
 			&i.Date,
 			&i.Type,
 			&i.Quantity,
@@ -82,8 +109,6 @@ func (q *Queries) GetTransactions(ctx context.Context) ([]Transaction, error) {
 			&i.Cost,
 			&i.Fees,
 			&i.Notes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

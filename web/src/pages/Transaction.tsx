@@ -52,8 +52,8 @@ export default function Transaction() {
                                     <Label className="block">{new Date(transaction.date).toLocaleDateString()}</Label>
                                     <Label className="text-xs text-neutral-500">{new Date(transaction.date).toLocaleTimeString()}</Label>
                                 </TableCell>
-                                <TableCell>{transaction.account_id}</TableCell>
-                                <TableCell>{transaction.asset_id}</TableCell>
+                                <TableCell>{transaction.account}</TableCell>
+                                <TableCell>{transaction.asset.toUpperCase()}</TableCell>
                                 <TableCell>{transaction.type.toLocaleUpperCase()}</TableCell>
                                 <TableCell className="text-end">{Number(transaction.quantity).toFixed(2)}</TableCell>
                                 <TableCell className="text-end">{transaction.price_per_unit}</TableCell>

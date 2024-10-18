@@ -1,7 +1,9 @@
 type Transaction = {
 	id: number;
 	account_id: number;
+	account: string;
 	asset_id: string;
+	asset: string;
 	date: string;
 	type: string;
 	quantity: string;
