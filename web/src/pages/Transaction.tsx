@@ -46,6 +46,7 @@ export default function Transaction() {
                 </TableHeader>
                 <TableBody>
                     {transactions.map((transaction) => {
+                        const rowColor = transaction.type.toUpperCase() === "DEPOSIT" ? "text-green-500" : "text-red-500";
                         return (
                             <TableRow key={transaction.id}>
                                 <TableCell>
@@ -54,7 +55,7 @@ export default function Transaction() {
                                 </TableCell>
                                 <TableCell>{transaction.account}</TableCell>
                                 <TableCell>{transaction.asset.toUpperCase()}</TableCell>
-                                <TableCell>{transaction.type.toLocaleUpperCase()}</TableCell>
+                                <TableCell className={`${rowColor} font-bold`}>{transaction.type.toLocaleUpperCase()}</TableCell>
                                 <TableCell className="text-end">{Number(transaction.quantity).toFixed(2)}</TableCell>
                                 <TableCell className="text-end">{transaction.price_per_unit}</TableCell>
                                 <TableCell className="text-end">{transaction.fees}</TableCell>

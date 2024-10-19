@@ -101,7 +101,6 @@ func createTransaction(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
-
 	if err == sql.ErrNoRows {
 		_, err = db.Queries.CreateAccountAsset(context.Background(), sqlc.CreateAccountAssetParams{
 			AccountID:   body.AccountID,
@@ -116,16 +115,15 @@ func createTransaction(c *fiber.Ctx) error {
 			})
 		}
 	}
-
+	database_quantity, err := decimal.NewFromString(account_asset.Quantity)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
 	switch body.Type {
 	case "deposit":
-		database_quantity, err := decimal.NewFromString(account_asset.Quantity)
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{
-				"success": false,
-				"message": err.Error(),
-			})
-		}
 		sum_quantity := input_quantity.Add(database_quantity)
 		err = db.WithTx(context.Background(), func(q *sqlc.Queries) error {
 			_, err = db.Queries.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
@@ -163,10 +161,54 @@ func createTransaction(c *fiber.Ctx) error {
 		}
 		return c.JSON(fiber.Map{
 			"success": true,
-			"message": "Successfully create transaction",
+			"message": "Successfully create deposit transaction",
 		})
 	case "withdraw":
-		fmt.Println("withdraw")
+		left_quantity := database_quantity.Sub(input_quantity)
+		if left_quantity.LessThan(decimal.Zero) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"success": false,
+				"message": "Your current balance is lower than the requested withdrawal amount.",
+			})
+		}
+		err := db.WithTx(context.Background(), func(q *sqlc.Queries) error {
+			_, err = db.Queries.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
+				AccountID:    body.AccountID,
+				AssetID:      body.AssetID,
+				Date:         body.Date,
+				Type:         "withdraw",
+				Quantity:     input_quantity.String(),
+				PricePerUnit: "1",
+				Cost:         input_quantity.String(),
+				Fees:         fees.String(),
+				Notes:        body.Notes,
+			})
+			if err != nil {
+				fmt.Println("Withdraw: Failed to create transaction")
+				return err
+			}
+			_, err = db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
+				AccountID:   body.AccountID,
+				AssetID:     body.AssetID,
+				Quantity:    left_quantity.String(),
+				AverageCost: left_quantity.String(),
+			})
+			if err != nil {
+				fmt.Println("Withdraw: Failed to update account asset")
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		}
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "Successfully create withdraw transaction",
+		})
 	}
 	return c.SendStatus(503)
 }

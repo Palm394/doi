@@ -110,7 +110,7 @@ export default function NewTransactionDialog(props: props) {
                         </div>
                         <div>
                             <Label>Date<Label className="text-red-500">&nbsp;{errors.date?.message}</Label></Label>
-                            <Input type="datetime-local" {...register("date", { required: "This field is required", valueAsDate: true })} className="w-fit" />
+                            <Input type="datetime-local" step={1} {...register("date", { required: "This field is required", valueAsDate: true })} className="w-fit" />
                         </div>
                     </div>
                     <div className="flex-1">
@@ -128,7 +128,8 @@ export default function NewTransactionDialog(props: props) {
                                         {Object.values(TransactionType).map((type) => (
                                             <SelectItem key={type} value={type}
                                                 disabled={
-                                                    type !== TransactionType.DEPOSIT
+                                                    type !== TransactionType.DEPOSIT &&
+                                                    type !== TransactionType.WITHDRAW
                                                 }
                                             >
                                                 {type.charAt(0).toLocaleUpperCase() + type.slice(1)}
@@ -183,7 +184,7 @@ export default function NewTransactionDialog(props: props) {
                     {(watch("transactionType") === TransactionType.DEPOSIT || watch("transactionType") === TransactionType.WITHDRAW) &&
                         <div>
                             <Label>Amount <Label className="text-red-500">&nbsp;{errors.quantity?.message}</Label></Label>
-                            <Input type="number" {...register("quantity", { required: "This field is required", valueAsNumber: true })} />
+                            <Input {...register("quantity", { required: "This field is required", valueAsNumber: true })} />
                         </div>
                     }
                     <div>
