@@ -28,7 +28,7 @@ type props = {
 export default function NewTransactionDialog(props: props) {
     const [open, setOpen] = useState<boolean>(false)
     const [avaliableAccounts, setAvaliableAccounts] = useState<{ name: string, id: number }[]>([])
-    const [avaliableAssets, setAvaliableAssets] = useState<{ name: string, id: string }[]>([])
+    const [avaliableAssets, setAvaliableAssets] = useState<{ name: string, id: string }[]>()
 
     const { register, formState: { errors }, handleSubmit, reset, control, watch } = useForm<createTransactionParams>()
 
@@ -142,23 +142,26 @@ export default function NewTransactionDialog(props: props) {
                     </div>
                     <div className="flex-1">
                         <Label>Asset<Label className="text-red-500">&nbsp;{errors.assetID?.message}</Label></Label>
-                        <Controller
-                            name="assetID"
-                            rules={{ required: "This field is required" }}
-                            control={control}
-                            render={({ field }) =>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select asset" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {avaliableAssets.map((asset) => (
-                                            <SelectItem key={asset.id} value={asset.id}>{asset.name.toUpperCase()}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            }
-                        />
+                        {avaliableAssets &&
+                            <Controller
+                                name="assetID"
+                                defaultValue={avaliableAssets[0].id}
+                                rules={{ required: "This field is required" }}
+                                control={control}
+                                render={({ field }) =>
+                                    <Select onValueChange={field.onChange} {...field}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select asset" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {avaliableAssets.map(({ id, name }) => (
+                                                <SelectItem key={id} value={id}>{name.toUpperCase()}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                }
+                            />
+                        }
                     </div>
                     {(watch("transactionType") === TransactionType.BUY || watch("transactionType") === TransactionType.SELL) &&
                         <>

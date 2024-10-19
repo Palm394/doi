@@ -36,11 +36,9 @@ export default function Transaction() {
                     <TableRow className="bg-black hover:bg-current">
                         <TableHead className="text-white">Date</TableHead>
                         <TableHead className="text-white">Account</TableHead>
-                        <TableHead className="text-white">Asset</TableHead>
                         <TableHead className="text-white">Type</TableHead>
-                        <TableHead className="text-white text-end">Shares</TableHead>
-                        <TableHead className="text-white text-end">Price/Share</TableHead>
-                        <TableHead className="text-white text-end">Fee</TableHead>
+                        <TableHead className="text-white">Asset</TableHead>
+                        <TableHead className="text-white text-end">Quantity</TableHead>
                         <TableHead />
                     </TableRow>
                 </TableHeader>
@@ -54,11 +52,9 @@ export default function Transaction() {
                                     <Label className="text-xs text-neutral-500">{new Date(transaction.date).toLocaleTimeString()}</Label>
                                 </TableCell>
                                 <TableCell>{transaction.account}</TableCell>
-                                <TableCell>{transaction.asset.toUpperCase()}</TableCell>
                                 <TableCell className={`${rowColor} font-bold`}>{transaction.type.toLocaleUpperCase()}</TableCell>
+                                <TableCell>{transaction.asset.toUpperCase()}</TableCell>
                                 <TableCell className="text-end">{Number(transaction.quantity).toFixed(2)}</TableCell>
-                                <TableCell className="text-end">{transaction.price_per_unit}</TableCell>
-                                <TableCell className="text-end">{transaction.fees}</TableCell>
                                 <TableCell className="float-end">
                                     <Button variant="ghost" className="h-8 w-8 p-2">
                                         <span className="sr-only">Open menu</span>
