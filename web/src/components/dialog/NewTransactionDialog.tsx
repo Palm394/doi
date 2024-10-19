@@ -36,6 +36,13 @@ export default function NewTransactionDialog(props: props) {
 
     const onSubmit: SubmitHandler<createTransactionParams> = async (data, event) => {
         event?.preventDefault()
+        if (isNaN(data.quantity)) {
+            return toast({
+                title: 'Create Transaction Failed',
+                description: 'Quantity must be a number',
+                variant: 'destructive',
+            })
+        }
         const response = await createTransaction(data)
         if (response.success === false) {
             return toast({
@@ -167,7 +174,7 @@ export default function NewTransactionDialog(props: props) {
                         <>
                             <div className="flex gap-4">
                                 <div>
-                                    <Label>Shares</Label>
+                                    <Label>Quantity</Label>
                                     <Input type="number" {...register("quantity", { required: "This field is required" })} />
                                     <Label className="text-red-500 text-xs">{errors.quantity?.message}</Label>
                                 </div>
@@ -186,7 +193,7 @@ export default function NewTransactionDialog(props: props) {
                     }
                     {(watch("transactionType") === TransactionType.DEPOSIT || watch("transactionType") === TransactionType.WITHDRAW) &&
                         <div>
-                            <Label>Amount <Label className="text-red-500">&nbsp;{errors.quantity?.message}</Label></Label>
+                            <Label>Amount<Label className="text-red-500">&nbsp;{errors.quantity?.message}</Label></Label>
                             <Input {...register("quantity", { required: "This field is required", valueAsNumber: true })} />
                         </div>
                     }

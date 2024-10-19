@@ -52,7 +52,7 @@ export default function Transaction() {
                                     <Label className="text-xs text-neutral-500">{new Date(transaction.date).toLocaleTimeString()}</Label>
                                 </TableCell>
                                 <TableCell>{transaction.account}</TableCell>
-                                <TableCell className={`${rowColor} font-bold`}>{transaction.type.toLocaleUpperCase()}</TableCell>
+                                <TableCell className={rowColor}>{transaction.type.toLocaleUpperCase()}</TableCell>
                                 <TableCell>{transaction.asset.toUpperCase()}</TableCell>
                                 <TableCell className="text-end">{Number(transaction.quantity).toFixed(2)}</TableCell>
                                 <TableCell className="float-end">

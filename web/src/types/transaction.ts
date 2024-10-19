@@ -15,12 +15,11 @@ type Transaction = {
 enum TransactionType {
 	DEPOSIT = "deposit",
 	WITHDRAW = "withdraw",
+	TRANSFER = "transfer",
 	BUY = "buy",
 	SELL = "sell",
 	DIVIDEND = "dividend",
-	TRANSFER = "transfer",
 	INTEREST = "interest",
-	FEE = "fee",
 	SPLIT = "split",
 }
 
