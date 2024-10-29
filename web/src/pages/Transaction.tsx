@@ -27,18 +27,18 @@ export default function Transaction() {
 
     return (
         <>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-bold">Transactions</h1>
                 <NewTransactionDialog parentRefresh={refresh} />
             </div>
             <Table className="bg-white rounded-xl">
                 <TableHeader>
-                    <TableRow className="bg-black hover:bg-current">
-                        <TableHead className="text-white">Date</TableHead>
-                        <TableHead className="text-white">Account</TableHead>
-                        <TableHead className="text-white">Type</TableHead>
-                        <TableHead className="text-white">Asset</TableHead>
-                        <TableHead className="text-white text-end">Quantity</TableHead>
+                    <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Account</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Asset</TableHead>
+                        <TableHead className="text-end">Quantity</TableHead>
                         <TableHead />
                     </TableRow>
                 </TableHeader>
