@@ -3,7 +3,6 @@ package router
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/Palm394/fire/db"
@@ -138,8 +137,9 @@ func createTransaction(c *fiber.Ctx) error {
 				Notes:        body.Notes,
 			})
 			if err != nil {
-				fmt.Println("Deposit: Failed to create transaction")
-				return err
+				return &fiber.Error{
+					Message: "Deposit: Failed to create transaction",
+				}
 			}
 			_, err = db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
 				AccountID:   body.AccountID,
@@ -148,8 +148,9 @@ func createTransaction(c *fiber.Ctx) error {
 				AverageCost: sum_quantity.String(),
 			})
 			if err != nil {
-				fmt.Println("Deposit: Failed to update account asset")
-				return err
+				return &fiber.Error{
+					Message: "Deposit: Failed to update account asset",
+				}
 			}
 			return nil
 		})
@@ -185,8 +186,9 @@ func createTransaction(c *fiber.Ctx) error {
 				Notes:        body.Notes,
 			})
 			if err != nil {
-				fmt.Println("Withdraw: Failed to create transaction")
-				return err
+				return &fiber.Error{
+					Message: "Withdraw: Failed to create transaction",
+				}
 			}
 			_, err = db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
 				AccountID:   body.AccountID,
@@ -195,8 +197,9 @@ func createTransaction(c *fiber.Ctx) error {
 				AverageCost: left_quantity.String(),
 			})
 			if err != nil {
-				fmt.Println("Withdraw: Failed to update account asset")
-				return err
+				return &fiber.Error{
+					Message: "Withdraw: Failed to update account asset",
+				}
 			}
 			return nil
 		})
