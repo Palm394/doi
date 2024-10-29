@@ -124,7 +124,7 @@ func createTransaction(c *fiber.Ctx) error {
 	}
 	switch body.Type {
 	case "deposit":
-		sum_quantity := input_quantity.Add(database_quantity)
+		sum_quantity := input_quantity.Add(database_quantity).Sub(fees)
 		err = db.WithTx(context.Background(), func(q *sqlc.Queries) error {
 			_, err = db.Queries.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
 				AccountID:    body.AccountID,
@@ -133,7 +133,7 @@ func createTransaction(c *fiber.Ctx) error {
 				Type:         "deposit",
 				Quantity:     input_quantity.String(),
 				PricePerUnit: "1",
-				Cost:         input_quantity.String(),
+				Cost:         input_quantity.Add(fees).String(),
 				Fees:         fees.String(),
 				Notes:        body.Notes,
 			})
@@ -164,8 +164,9 @@ func createTransaction(c *fiber.Ctx) error {
 			"message": "Successfully create deposit transaction",
 		})
 	case "withdraw":
-		left_quantity := database_quantity.Sub(input_quantity)
-		if left_quantity.LessThan(decimal.Zero) {
+		left_quantity := database_quantity.Sub(input_quantity).Sub(fees)
+		cost := input_quantity.Sub(fees)
+		if left_quantity.LessThan(decimal.Zero) || cost.LessThan(decimal.Zero) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"success": false,
 				"message": "Your current balance is lower than the requested withdrawal amount.",
@@ -179,7 +180,7 @@ func createTransaction(c *fiber.Ctx) error {
 				Type:         "withdraw",
 				Quantity:     input_quantity.String(),
 				PricePerUnit: "1",
-				Cost:         input_quantity.String(),
+				Cost:         cost.String(),
 				Fees:         fees.String(),
 				Notes:        body.Notes,
 			})
