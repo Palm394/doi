@@ -5,12 +5,15 @@ import NewTransactionDialog from "@/components/dialog/NewTransactionDialog";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
-import { getTransactions } from "@/services/transaction";
+import { deleteTransaction, getTransactions } from "@/services/transaction";
 import { Transaction as TransactionType } from "@/types/transaction";
 import { Label } from "@/components/ui/label";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Transaction() {
     const [transactions, setTransactions] = useState<TransactionType[]>([]);
+    const { toast } = useToast();
 
     useEffect(() => {
         refresh();
@@ -22,6 +25,23 @@ export default function Transaction() {
             setTransactions(response.data || []);
         } else {
             console.error(response.message);
+        }
+    }
+
+    async function deleteTransactionRequest(transactionID: number) {
+        const response = await deleteTransaction(transactionID);
+        if (response.success) {
+            toast({
+                title: "Transaction deleted",
+                description: "Transaction has been deleted successfully",
+            });
+            refresh();
+        } else {
+            toast({
+                title: "Delete transaction failed",
+                description: response.message,
+                variant: "destructive",
+            });
         }
     }
 
@@ -56,10 +76,23 @@ export default function Transaction() {
                                 <TableCell>{transaction.asset.toUpperCase()}</TableCell>
                                 <TableCell className="text-end">{Number(transaction.quantity).toFixed(2)}</TableCell>
                                 <TableCell className="float-end">
-                                    <Button variant="ghost" className="h-8 w-8 p-2">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-2">
+                                                <span className="sr-only">Open menu</span>
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            <DropdownMenuItem disabled>
+                                                Edit Transation
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-red-600" onClick={() => deleteTransactionRequest(transaction.id)}>
+                                                Delete Transaction
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         )

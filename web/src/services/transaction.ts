@@ -47,5 +47,22 @@ async function createTransaction(
 	}
 }
 
+type deleteTransactionResponse = {
+	success: boolean;
+	message?: string;
+};
+
+async function deleteTransaction(
+	transactionID: number
+): Promise<deleteTransactionResponse> {
+	try {
+		await internal_http_client.delete(`/api/transaction/${transactionID}`);
+		return { success: true };
+	} catch (error) {
+		console.error(error);
+		return { success: false, message: String(error) };
+	}
+}
+
 export type { createTransactionParams };
-export { getTransactions, createTransaction };
+export { getTransactions, createTransaction, deleteTransaction };

@@ -13,7 +13,8 @@ import (
 )
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes, created_at, updated_at
+INSERT INTO transactions (account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+RETURNING id, account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes, created_at, updated_at
 `
 
 type CreateTransactionParams struct {
@@ -54,6 +55,65 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const deleteTransaction = `-- name: DeleteTransaction :one
+DELETE FROM transactions WHERE id = $1 RETURNING id, account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes, created_at, updated_at
+`
+
+func (q *Queries) DeleteTransaction(ctx context.Context, id uuid.UUID) (Transaction, error) {
+	row := q.db.QueryRowContext(ctx, deleteTransaction, id)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.AssetID,
+		&i.Date,
+		&i.Type,
+		&i.Quantity,
+		&i.PricePerUnit,
+		&i.Cost,
+		&i.Fees,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTransaction = `-- name: GetTransaction :one
+SELECT id, account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes FROM transactions WHERE id = $1
+`
+
+type GetTransactionRow struct {
+	ID           uuid.UUID `json:"id"`
+	AccountID    int32     `json:"account_id"`
+	AssetID      uuid.UUID `json:"asset_id"`
+	Date         time.Time `json:"date"`
+	Type         string    `json:"type"`
+	Quantity     string    `json:"quantity"`
+	PricePerUnit string    `json:"price_per_unit"`
+	Cost         string    `json:"cost"`
+	Fees         string    `json:"fees"`
+	Notes        string    `json:"notes"`
+}
+
+func (q *Queries) GetTransaction(ctx context.Context, id uuid.UUID) (GetTransactionRow, error) {
+	row := q.db.QueryRowContext(ctx, getTransaction, id)
+	var i GetTransactionRow
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.AssetID,
+		&i.Date,
+		&i.Type,
+		&i.Quantity,
+		&i.PricePerUnit,
+		&i.Cost,
+		&i.Fees,
+		&i.Notes,
 	)
 	return i, err
 }
@@ -121,4 +181,55 @@ func (q *Queries) GetTransactions(ctx context.Context) ([]GetTransactionsRow, er
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateTransaction = `-- name: UpdateTransaction :one
+UPDATE transactions 
+SET account_id = $1, asset_id = $2, date = $3, type = $4, quantity = $5, price_per_unit = $6, cost = $7, fees = $8, notes = $9 
+WHERE id = $10
+RETURNING id, account_id, asset_id, date, type, quantity, price_per_unit, cost, fees, notes, created_at, updated_at
+`
+
+type UpdateTransactionParams struct {
+	AccountID    int32     `json:"account_id"`
+	AssetID      uuid.UUID `json:"asset_id"`
+	Date         time.Time `json:"date"`
+	Type         string    `json:"type"`
+	Quantity     string    `json:"quantity"`
+	PricePerUnit string    `json:"price_per_unit"`
+	Cost         string    `json:"cost"`
+	Fees         string    `json:"fees"`
+	Notes        string    `json:"notes"`
+	ID           uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error) {
+	row := q.db.QueryRowContext(ctx, updateTransaction,
+		arg.AccountID,
+		arg.AssetID,
+		arg.Date,
+		arg.Type,
+		arg.Quantity,
+		arg.PricePerUnit,
+		arg.Cost,
+		arg.Fees,
+		arg.Notes,
+		arg.ID,
+	)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.AssetID,
+		&i.Date,
+		&i.Type,
+		&i.Quantity,
+		&i.PricePerUnit,
+		&i.Cost,
+		&i.Fees,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

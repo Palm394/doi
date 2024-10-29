@@ -11,7 +11,7 @@ const internal_http_client = axios.create({
 internal_http_client.interceptors.response.use(
 	(res) => {
 		if (res.data["success"] === false) {
-			throw Promise.reject(res);
+			return Promise.reject(res.data["message"]);
 		}
 		return res.data;
 	},

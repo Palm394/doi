@@ -15,6 +15,7 @@ import (
 func Transaction(router fiber.Router) {
 	router.Get("/", getTransactions)
 	router.Post("/", createTransaction)
+	router.Delete("/:id", deleteTransaction)
 }
 
 type transactionRequestParams struct {
@@ -215,4 +216,122 @@ func createTransaction(c *fiber.Ctx) error {
 		})
 	}
 	return c.SendStatus(503)
+}
+
+func deleteTransaction(c *fiber.Ctx) error {
+	uuid, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to convert params to UUID",
+		})
+	}
+	transaction, err := db.Queries.GetTransaction(context.Background(), uuid)
+	if err == sql.ErrNoRows {
+		return c.JSON(fiber.Map{
+			"success": false,
+			"message": "Transaction not found",
+		})
+	}
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+	account_asset, err := db.Queries.GetAccountAssets(context.Background(), sqlc.GetAccountAssetsParams{
+		AccountID: transaction.AccountID,
+		AssetID:   transaction.AssetID,
+	})
+	if err == sql.ErrNoRows {
+		return c.JSON(fiber.Map{
+			"success": false,
+			"message": "Account asset not found",
+		})
+	}
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+	account_asset_quantity, err := decimal.NewFromString(account_asset.Quantity)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to convert account asset quantity to decimal",
+		})
+	}
+	transaction_cost, err := decimal.NewFromString(transaction.Cost)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to convert transaction cost to decimal",
+		})
+	}
+	switch transaction.Type {
+	case "deposit":
+		if account_asset_quantity.LessThan(transaction_cost) {
+			return c.JSON(fiber.Map{
+				"success": false,
+				"message": "Account asset quantity is lower than transaction cost",
+			})
+		}
+		err = db.WithTx(context.Background(), func(q *sqlc.Queries) error {
+			new_quantity := account_asset_quantity.Sub(transaction_cost)
+			_, err := db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
+				AccountID:   transaction.AccountID,
+				AssetID:     transaction.AssetID,
+				Quantity:    new_quantity.String(),
+				AverageCost: new_quantity.String(),
+			})
+			if err != nil {
+				return err
+			}
+			_, err = db.Queries.DeleteTransaction(context.Background(), uuid)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"message": err.Error(),
+			})
+		}
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "Successfully delete transaction",
+		})
+	case "withdraw":
+		err = db.WithTx(context.Background(), func(q *sqlc.Queries) error {
+			new_quantity := account_asset_quantity.Add(transaction_cost)
+			_, err := db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
+				AccountID:   transaction.AccountID,
+				AssetID:     transaction.AssetID,
+				Quantity:    new_quantity.String(),
+				AverageCost: new_quantity.String(),
+			})
+			if err != nil {
+				return err
+			}
+			_, err = db.Queries.DeleteTransaction(context.Background(), uuid)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"success": false,
+				"message": "Failed to commit deleting withdraw transaction " + err.Error(),
+			})
+		}
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "Successfully delete transaction",
+		})
+	}
+	return c.SendStatus(fiber.StatusServiceUnavailable)
 }
