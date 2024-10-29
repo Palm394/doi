@@ -126,7 +126,7 @@ func createTransaction(c *fiber.Ctx) error {
 	case "deposit":
 		sum_quantity := input_quantity.Add(database_quantity).Sub(fees)
 		err = db.WithTx(context.Background(), func(q *sqlc.Queries) error {
-			_, err = db.Queries.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
+			_, err = q.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
 				AccountID:    body.AccountID,
 				AssetID:      body.AssetID,
 				Date:         body.Date,
@@ -142,7 +142,7 @@ func createTransaction(c *fiber.Ctx) error {
 					Message: "Deposit: Failed to create transaction",
 				}
 			}
-			_, err = db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
+			_, err = q.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
 				AccountID:   body.AccountID,
 				AssetID:     body.AssetID,
 				Quantity:    sum_quantity.String(),
@@ -175,7 +175,7 @@ func createTransaction(c *fiber.Ctx) error {
 			})
 		}
 		err := db.WithTx(context.Background(), func(q *sqlc.Queries) error {
-			_, err = db.Queries.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
+			_, err = q.CreateTransaction(context.Background(), sqlc.CreateTransactionParams{
 				AccountID:    body.AccountID,
 				AssetID:      body.AssetID,
 				Date:         body.Date,
@@ -191,7 +191,7 @@ func createTransaction(c *fiber.Ctx) error {
 					Message: "Withdraw: Failed to create transaction",
 				}
 			}
-			_, err = db.Queries.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
+			_, err = q.UpdateAccountAsset(context.Background(), sqlc.UpdateAccountAssetParams{
 				AccountID:   body.AccountID,
 				AssetID:     body.AssetID,
 				Quantity:    left_quantity.String(),
