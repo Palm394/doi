@@ -27,9 +27,11 @@ async function login(form: LoginRequest): Promise<LoginResponse> {
 
 async function verify(): Promise<boolean> {
 	try {
-		const response = await internal_http_client.get("/api/auth/verify");
-		if (response.data["success"] === false) {
-			throw Error(response.data["message"]);
+		const response: { success: boolean } = await internal_http_client.get(
+			"/api/auth/verify"
+		);
+		if (response.success === false) {
+			throw Error("Unauthorized");
 		}
 		return true;
 	} catch (error) {

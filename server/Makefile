@@ -13,3 +13,7 @@ migrateup:
 
 migratedown:
 	migrate -path db/migration -database ${POSTGRES_URL} -verbose down
+
+migratecreate:
+	# make migratecreate name=create_users
+	migrate create -ext sql -dir db/migration -seq $(name)

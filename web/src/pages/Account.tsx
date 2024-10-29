@@ -27,16 +27,16 @@ export default function Account() {
 
     return (
         <>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-bold">Account</h1>
                 <NewAccountDialog parentRefresh={refresh} />
             </div>
             <Table className="bg-white rounded-xl">
                 <TableHeader>
-                    <TableRow className="bg-black hover:bg-current">
-                        <TableHead className="text-white text-center">ID</TableHead>
-                        <TableHead className="text-white">Name</TableHead>
-                        <TableHead className="text-white">Nation</TableHead>
+                    <TableRow>
+                        <TableHead className="text-center">ID</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Nation</TableHead>
                         <TableHead />
                     </TableRow>
                 </TableHeader>

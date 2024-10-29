@@ -14,6 +14,7 @@ import Account from '@/pages/Account';
 import { Toaster } from '@/components/ui/toaster';
 import AuthRoute from '@/components/AuthRoute';
 import Dashboard from '@/pages/Layout/Dashboard';
+import Transaction from '@/pages/Transaction';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
         path: "/account",
         element: <Account />,
       },
+      {
+        path: "/transactions",
+        element: <Transaction />,
+      }
     ]
   },
   {

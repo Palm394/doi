@@ -1,11 +1,20 @@
 import { internal_http_client } from "./axios";
 
-async function getAccount(): Promise<any> {
+type getAccountResponse = {
+	success: boolean;
+	data?: any;
+	message?: string;
+};
+
+async function getAccount(): Promise<getAccountResponse> {
 	try {
 		const response = await internal_http_client.get("/api/account");
-		return response.data;
+		return { success: true, data: response.data };
 	} catch (error) {
-		return { success: false, message: "An error occurred" };
+		return {
+			success: false,
+			message: error ? String(error) : "An error occurred",
+		};
 	}
 }
 
