@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -85,6 +86,48 @@ func (q *Queries) GetAccountAssets(ctx context.Context, arg GetAccountAssetsPara
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getAllCashAccount = `-- name: GetAllCashAccount :many
+SELECT accounts.name, account_asset.quantity, assets.current_value, assets.current_value_currency FROM
+accounts LEFT JOIN
+account_asset LEFT JOIN assets ON account_asset.asset_id = assets.id AND assets.type = 'CASH'
+ON accounts.id = account_asset.account_id
+`
+
+type GetAllCashAccountRow struct {
+	Name                 string         `json:"name"`
+	Quantity             string         `json:"quantity"`
+	CurrentValue         sql.NullString `json:"current_value"`
+	CurrentValueCurrency sql.NullString `json:"current_value_currency"`
+}
+
+func (q *Queries) GetAllCashAccount(ctx context.Context) ([]GetAllCashAccountRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllCashAccount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllCashAccountRow
+	for rows.Next() {
+		var i GetAllCashAccountRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Quantity,
+			&i.CurrentValue,
+			&i.CurrentValueCurrency,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateAccountAsset = `-- name: UpdateAccountAsset :one

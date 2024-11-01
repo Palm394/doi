@@ -7,6 +7,7 @@ import (
 	"github.com/Palm394/fire/db"
 	"github.com/Palm394/fire/db/sqlc"
 	"github.com/gofiber/fiber/v2"
+	"github.com/shopspring/decimal"
 )
 
 var AssetType = []string{
@@ -21,6 +22,7 @@ var Currency = []string{
 func Asset(router fiber.Router) {
 	router.Get("/", getAssets)
 	router.Post("/", createAsset)
+	router.Get("/cash_account", getCashAccount)
 	router.Patch("/current_price", updateCurrentPrice)
 }
 
@@ -31,7 +33,7 @@ func getAssets(c *fiber.Ctx) error {
 	}
 	return c.JSON(&fiber.Map{
 		"success": true,
-		"data": assets,
+		"data":    assets,
 	})
 }
 
@@ -44,7 +46,7 @@ func createAsset(c *fiber.Ctx) error {
 	if len(body.Name) == 0 || !isValidAssetType(body.Type.String) {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
-	
+
 	new_asset, err := db.Queries.CreateAsset(context.Background(), body)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
@@ -61,7 +63,50 @@ func createAsset(c *fiber.Ctx) error {
 
 	return c.JSON(&fiber.Map{
 		"success": true,
-		"data": new_asset,
+		"data":    new_asset,
+	})
+}
+
+type CashAccount struct {
+	Name              string          `json:"name"`
+	Current_value_thb decimal.Decimal `json:"current_value_thb"`
+}
+
+func getCashAccount(c *fiber.Ctx) error {
+	cashAccount, err := db.Queries.GetAllCashAccount(context.Background())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"message": "Failed to get cash account from database",
+		})
+	}
+	data := make([]CashAccount, 0)
+	sum := decimal.NewFromInt(0)
+	for _, cash := range cashAccount {
+		if cash.CurrentValueCurrency.String != "THB" {
+			continue
+		}
+		quantity, err := decimal.NewFromString(cash.Quantity)
+		if err != nil {
+			continue
+		}
+		value, err := decimal.NewFromString(cash.CurrentValue.String)
+		if err != nil {
+			continue
+		}
+		current_value := quantity.Mul(value)
+		sum = sum.Add(current_value)
+		data = append(data, CashAccount{
+			Name:              cash.Name,
+			Current_value_thb: current_value,
+		})
+	}
+	return c.JSON(&fiber.Map{
+		"success": true,
+		"data": map[string]interface{}{
+			"sum":           sum,
+			"cash_accounts": data,
+		},
 	})
 }
 
