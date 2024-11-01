@@ -10,8 +10,7 @@ import { PageRoute } from "@/config/page";
 export default function Sidebar() {
     return (
         <div className="w-64 p-6 bg-white flex flex-col justify-between">
-            <div>
-                <h1 className="text-2xl font-bold mb-6">FIRE</h1>
+            <div className="mt-4">
                 <SidebarLink />
             </div>
             <DropdownMenu>
