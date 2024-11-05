@@ -102,7 +102,7 @@ func createTransaction(c *fiber.Ctx) error {
 		})
 	}
 	if err == sql.ErrNoRows {
-		_, err = db.Queries.CreateAccountAsset(context.Background(), sqlc.CreateAccountAssetParams{
+		account_asset, err = db.Queries.CreateAccountAsset(context.Background(), sqlc.CreateAccountAssetParams{
 			AccountID:   body.AccountID,
 			AssetID:     body.AssetID,
 			Quantity:    decimal.Zero.String(),
