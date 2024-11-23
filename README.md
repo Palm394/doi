@@ -4,10 +4,12 @@ Simple tracking income and expense application
 
 ## Screenshots
 
-![overview](screenshots/overview.png)
-![account](screenshots/account.png)
-![transaction](screenshots/transaction.png)
-![add new transation](screenshots/new_transaction.png)
+![overview|](screenshots/overview.png)
+<img src="screenshots/account.png" width="500">
+<img src="screenshots/transaction.png" width="500">
+<div align="center">
+  <img src="screenshots/new_transaction.png" width="400">
+</div>
 
 ## Tech stack
 
